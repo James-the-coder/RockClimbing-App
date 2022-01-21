@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { Platform, Text, View } from 'react-native';
 import Geocoder from "react-native-geocoding";
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
@@ -6,63 +6,78 @@ import {openDatabase} from 'react-native-sqlite-storage';
 
 const db = openDatabase({name:'rockClimbingInfo.db', createFromLocation: 1});
 Geocoder.init("AIzaSyCqH_RaZ8Djn11bjuMWPpgeDeDIX359g9k");
-var running = true;
-var renderMarker = false;
-
-const data = [
-    { coordinates: {latitude: 50, longitude: 50}},
-    { coordinates: {latitude: 50.1, longitude: 50.1}}
-]
 
 
-const CragFinder = () => {
-
-    var [loc, setLoc] = useState([]);
+var data = []
 
 
+class CragFinder extends Component {
 
-    while (running) {
-        async function getCoords(){
+    state = { loc: [] }
+
+    constructor(props){
+        super(props);
+
+        this.mapMarkers = this.mapMarkers.bind(this);
+    }
+
+    //const [loc, setLoc] = useState([]);
+
+    componentDidMount() {
+
             Geocoder.from("wales caerwent")
                 .then(json => {
                     var location = json.results[0].geometry.location;
+                    //console.log(location)
 
-                    setLoc(location);
-                    console.log(location.lng)
-                    if (typeof location !== 'undefined'){
-                        data.push({coordinates: location})
-                        console.log(location.lat)
-                    }
+                    //data.push({coordinates: {latitude : location.lat, longitude : location.lng}})
+                    console.log(location)
+                    this.setState({loc : {"latitude" : location.lat, "longitude" : location.lng}})
 
 
+                    //console.log(this.state.loc.latitude)
+                    //console.log(this.state.loc.longitude)
+            }).catch(error => console.warn(error));
+    }
 
+    mapMarkers = () => {
 
-            })
-        }
-        running = false
+        return this.state.loc.map((item, index) => <Marker
+            key={index}
+            title="test"
+            coordinate={{ latitude: item.latitude, longitude: item.longitude }}
+            description="Test"
+        >
+        </Marker>)
 
     }
-    console.log(data)
 
-    return (
+
+
+    render() {
+
+        return (
 
                 <MapView
                     style={{flex: 1}}
                     provider={PROVIDER_GOOGLE}
                     initialRegion={{
-                    latitude: 50,
-                    longitude: 50,
-                    latitudeDelta: 0.0922,
-                    loadingEnabled: true,
-                    longitudeDelta: 0.0421}}>
+                    latitude: 51,
+                    longitude: -2,
+                    latitudeDelta: 10,
+                    longitudeDelta: 10}}>
 
-                    {data.map((item, index) => (
-                        <Marker key={index} title="Test" coordinate={item.coordinates} />
-                    ))}
+                    <Marker
+                        coordinate={{latitude: 51, longitude: -2.5}}
+                        title="bruh"
+                        description="bruh"
+                        ></Marker>
                 </MapView>
 
+        )
 
-    )
+
+    }
 }
 
 
