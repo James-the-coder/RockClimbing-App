@@ -3,6 +3,8 @@
 // Screen to register the user
 
 import React, {useState} from 'react';
+import { fireStoreDb, authentication } from './firebase';
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import {
   View,
   ScrollView,
@@ -21,53 +23,91 @@ import {openDatabase} from 'react-native-sqlite-storage';
 const db = openDatabase({name: 'MainDB.db', createFromLocation: 1});
 
 const CreateAccount = ({navigation}) => {
-  let [userName, setUserName] = useState('');
-  let [password, setUserPassword] = useState('');
-  let [email, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  const [password, setUserPassword] = useState('');
+  const [email, setUserEmail] = useState('');
 
-  let register_user = () => {
-    console.log(userName, password, email);
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
-    if (!userName) {
-      alert('Please fill name');
-      return;
+  const RegisterUser = () => {
+    createUserWithEmailAndPassword(authentication, email, password)
+    .then((re) => {
+        setIsSignedIn(true);
+        alert("registered account successfully")
+        navigation.navigate('Welcome')
+    })
+    .catch((re) => {
+        alert(re.message)
+    })
+  }
+  const SignInUser = () => {
+      signInWithEmailAndPassword(authentication, email, password)
+      .then((re) => {
+          setIsSignedIn(true);
+          alert("signed in")
+          //navigation.navigate('Welcome')
+      })
+      .catch((re) => {
+          alert(re.message);
+      })
     }
-    if (!password) {
-      alert('Please fill Contact Number');
-      return;
-    }
-    if (!email) {
-      alert('Please fill Address');
-      return;
+    const SignOutUser = () => {
+      signOut(authentication)
+      .then((re) => {
+          setIsSignedIn(false);
+          console.log(isSignedIn)
+          alert("signed out")
+          //navigation.navigate('Welcome')
+      })
+      .catch((re) => {
+          alert(re.message);
+      })
     }
 
-    db.transaction(function (tx) {
-      tx.executeSql(
-        'INSERT INTO USERS (USERNAME, PASSWORD, EMAIL) VALUES (?,?,?)',
-        [userName, password, email],
-        (tx, results) => {
-          //console.log('Results', results.rowsAffected);
-          if (results.rowsAffected > 0) {
-            Alert.alert(
-              'Success',
-              'You are Registered Successfully',
-              [
-                {
-                  text: 'Ok',
-                  onPress: () => navigation.navigate('Welcome'),
-                },
-              ],
-              {cancelable: false},
-            );
-          } else alert('Registration Failed');
-        },
-      );
-    });
-  };
+
+//  let register_user = () => {
+//    //console.log(userName, password, email);
+//
+//    if (!userName) {
+//      alert('Please fill name');
+//      return;
+//    }
+//    if (!password) {
+//      alert('Please fill Contact Number');
+//      return;
+//    }
+//    if (!email) {
+//      alert('Please fill Address');
+//      return;
+//    }
+//
+//    db.transaction(function (tx) {
+//      tx.executeSql(
+//        'INSERT INTO USERS (USERNAME, PASSWORD, EMAIL) VALUES (?,?,?)',
+//        [userName, password, email],
+//        (tx, results) => {
+//          //console.log('Results', results.rowsAffected);
+//          if (results.rowsAffected > 0) {
+//            Alert.alert(
+//              'Success',
+//              'You are Registered Successfully',
+//              [
+//                {
+//                  text: 'Ok',
+//                  onPress: () => navigation.navigate('Welcome'),
+//                },
+//              ],
+//              {cancelable: false},
+//            );
+//          } else alert('Registration Failed');
+//        },
+//      );
+//    });
+//  };
 
   return (
     <SafeAreaView style={{flex: 1}}>
-      <View style={{flex: 1, backgroundColor: 'white'}}>
+      <KeyboardAvoidingView style={{flex: 1, backgroundColor: 'white'}}>
         <View style={{flex: 1}}>
           <ScrollView keyboardShouldPersistTaps="handled">
             <KeyboardAvoidingView
@@ -75,12 +115,8 @@ const CreateAccount = ({navigation}) => {
               style={{flex: 1, justifyContent: 'space-between'}}>
               <TextInput
                 style={styles.input}
-                placeholder="Enter Username"
-                onChangeText={(userName) => setUserName(userName)}
-              />
-              <TextInput
-                style={styles.input}
                 placeholder="Enter Password"
+                secureTextEntry
                 onChangeText={(password) => setUserPassword(password)}
 
               />
@@ -90,7 +126,7 @@ const CreateAccount = ({navigation}) => {
                 onChangeText={(email) => setUserEmail(email)}
               />
               <Pressable
-                  onPress={() => register_user()}
+                  onPress={() => RegisterUser()}
                   style={({ pressed }) => ({
                   backgroundColor: pressed ? 'blue' : 'green',
                   borderRadius: 8,
@@ -98,12 +134,19 @@ const CreateAccount = ({navigation}) => {
                   styles.pressableStyle
                   )}>
 
-                  <Text style={styles.text}>Submit</Text>
+                  <Text style={styles.text}>Register</Text>
               </Pressable>
+              {isSignedIn == true?
+
+                <Pressable onPress={() => SignOutUser()}style={({ pressed }) => ({backgroundColor: pressed ? 'blue' : 'green',borderRadius: 8,},styles.pressableStyle)}><Text style={styles.text}>Sign Out</Text></Pressable>
+                :
+                <Pressable onPress={() => SignInUser()} style={({ pressed }) => ({backgroundColor: pressed ? 'blue' : 'green',borderRadius: 8,},styles.pressableStyle)}><Text style={styles.text}>Login</Text></Pressable>
+              }
+
             </KeyboardAvoidingView>
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
