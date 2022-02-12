@@ -2,43 +2,14 @@ import React, {useEffect} from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import {openDatabase} from 'react-native-sqlite-storage';
 
-const db = openDatabase({name: 'MainDB.db', createFromLocation: 1});
+
 
 const Welcome = ({navigation}) => {
-    useEffect(() => {
-        db.transaction(function (txn) {
-          txn.executeSql(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='USER'",
-            [],
-            function (tx, res) {
-              console.log('item:', res.rows.length);
-              if (res.rows.length == 0) {
-                txn.executeSql('DROP TABLE IF EXISTS USER', []);
-                txn.executeSql(
-                  'CREATE TABLE IF NOT EXISTS USER(ID INTEGER PRIMARY KEY AUTOINCREMENT, USERNAME VARCHAR(20), PASSWORD VARCHAR(20), EMAIL VARCHAR(30))',
-                  [],
-                );
-              }
-            },
-          );
-        });
-    }, []);
 
 
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Welcome</Text>
-        <Pressable
-            onPress={() => navigation.navigate('Login')}
-            style={({ pressed }) => ({
-                backgroundColor: pressed ? 'blue' : 'green',
-                borderRadius: 8,
-            },
-            styles.pressableStyle
-            )}>
-
-            <Text style={styles.text}>Login</Text>
-        </Pressable>
         <Pressable
             onPress={() => navigation.navigate('Create Account')}
             style={({ pressed }) => ({
@@ -48,10 +19,10 @@ const Welcome = ({navigation}) => {
             styles.pressableStyle
             )}>
 
-            <Text style={styles.text}>Create New Account</Text>
+            <Text style={styles.text}>Sign In</Text>
         </Pressable>
         <Pressable
-            onPress={() => navigation.navigate('Crag Finder')}
+            onPress={() => navigation.navigate('Crag Finder', {climbingData: []})}
             style={({ pressed }) => ({
             backgroundColor: pressed ? 'blue' : 'green',
             borderRadius: 8,
@@ -61,8 +32,9 @@ const Welcome = ({navigation}) => {
 
             <Text style={styles.text}>Crag Finder</Text>
         </Pressable>
+
         <Pressable
-            onPress={() => navigation.navigate('Filters')}
+            onPress={() => navigation.navigate('HomePage')}
             style={({ pressed }) => ({
             backgroundColor: pressed ? 'blue' : 'green',
             borderRadius: 8,
@@ -70,10 +42,10 @@ const Welcome = ({navigation}) => {
             styles.pressableStyle
             )}>
 
-            <Text style={styles.text}>Filters</Text>
+            <Text style={styles.text}>Home Page</Text>
         </Pressable>
         <Pressable
-            onPress={() => navigation.navigate('ViewAll')}
+            onPress={() => navigation.navigate('StoreClimb', {selected: ""})}
             style={({ pressed }) => ({
             backgroundColor: pressed ? 'blue' : 'green',
             borderRadius: 8,
@@ -81,7 +53,7 @@ const Welcome = ({navigation}) => {
             styles.pressableStyle
             )}>
 
-            <Text style={styles.text}>View All</Text>
+            <Text style={styles.text}>Store Climb</Text>
         </Pressable>
       </View>
     );
