@@ -3,6 +3,9 @@
 // Screen to register the user
 
 import React, {useState} from 'react';
+import { fireStoreDb, authentication} from './firebase';
+import { doc, setDoc } from "firebase/firestore/lite";
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, collection} from 'firebase/auth';
 import {
   View,
   ScrollView,
@@ -17,57 +20,89 @@ import {
 
 import {openDatabase} from 'react-native-sqlite-storage';
 
-// Connection to access the pre-populated user_db.db
-const db = openDatabase({name: 'MainDB.db', createFromLocation: 1});
-
 const CreateAccount = ({navigation}) => {
-  let [userName, setUserName] = useState('');
-  let [password, setUserPassword] = useState('');
-  let [email, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  const [password, setUserPassword] = useState('');
+  const [email, setUserEmail] = useState('');
 
-  let register_user = () => {
-    console.log(userName, password, email);
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
+  const SetData = async() => {
+
+    await setDoc(doc(fireStoreDb, "users", authentication.currentUser.uid), {
+        email: email,
+        password: password,
+        username: userName
+    })
+    await setDoc(doc(fireStoreDb, "Climbs", authentication.currentUser.uid), {
+        CragId: []
+    })
+
+  }
+
+  const RegisterUser = () => {
     if (!userName) {
-      alert('Please fill name');
+      alert('Please fill username');
       return;
     }
     if (!password) {
-      alert('Please fill Contact Number');
+      alert('Please fill password Number');
       return;
     }
     if (!email) {
-      alert('Please fill Address');
+      alert('Please fill email');
       return;
     }
+    createUserWithEmailAndPassword(authentication, email, password)
+    .then((re) => {
+        SetData()
+        setIsSignedIn(true);
 
-    db.transaction(function (tx) {
-      tx.executeSql(
-        'INSERT INTO USERS (USERNAME, PASSWORD, EMAIL) VALUES (?,?,?)',
-        [userName, password, email],
-        (tx, results) => {
-          //console.log('Results', results.rowsAffected);
-          if (results.rowsAffected > 0) {
-            Alert.alert(
-              'Success',
-              'You are Registered Successfully',
-              [
-                {
-                  text: 'Ok',
-                  onPress: () => navigation.navigate('Welcome'),
-                },
-              ],
-              {cancelable: false},
-            );
-          } else alert('Registration Failed');
-        },
-      );
-    });
-  };
+        alert("registered account successfully")
+        navigation.navigate('Welcome')
+    })
+    .catch((re) => {
+        alert(re.message)
+    })
+  }
+  const SignInUser = () => {
+    if (!userName) {
+      alert('Please fill username');
+      return;
+    }
+    if (!password) {
+      alert('Please fill password Number');
+      return;
+    }
+    if (!email) {
+      alert('Please fill email');
+      return;
+    }
+      signInWithEmailAndPassword(authentication, email, password)
+      .then((re) => {
+          setIsSignedIn(true);
+          alert("signed in")
+          navigation.navigate('Welcome')
+      })
+      .catch((re) => {
+          alert(re.message);
+      })
+    }
+    const SignOutUser = () => {
+      signOut(authentication)
+      .then((re) => {
+          setIsSignedIn(false);
+          alert("signed out")
+          //navigation.navigate('Welcome')
+      })
+      .catch((re) => {
+          alert(re.message);
+      })
+    }
 
   return (
     <SafeAreaView style={{flex: 1}}>
-      <View style={{flex: 1, backgroundColor: 'white'}}>
+      <KeyboardAvoidingView style={{flex: 1, backgroundColor: 'white'}}>
         <View style={{flex: 1}}>
           <ScrollView keyboardShouldPersistTaps="handled">
             <KeyboardAvoidingView
@@ -75,12 +110,8 @@ const CreateAccount = ({navigation}) => {
               style={{flex: 1, justifyContent: 'space-between'}}>
               <TextInput
                 style={styles.input}
-                placeholder="Enter Username"
-                onChangeText={(userName) => setUserName(userName)}
-              />
-              <TextInput
-                style={styles.input}
                 placeholder="Enter Password"
+                secureTextEntry
                 onChangeText={(password) => setUserPassword(password)}
 
               />
@@ -89,8 +120,13 @@ const CreateAccount = ({navigation}) => {
                 placeholder="Enter Email"
                 onChangeText={(email) => setUserEmail(email)}
               />
+              <TextInput
+                  style={styles.input}
+                  placeholder="Enter Username"
+                  onChangeText={(name) => setUserName(name)}
+                />
               <Pressable
-                  onPress={() => register_user()}
+                  onPress={() => RegisterUser()}
                   style={({ pressed }) => ({
                   backgroundColor: pressed ? 'blue' : 'green',
                   borderRadius: 8,
@@ -98,12 +134,19 @@ const CreateAccount = ({navigation}) => {
                   styles.pressableStyle
                   )}>
 
-                  <Text style={styles.text}>Submit</Text>
+                  <Text style={styles.text}>Register</Text>
               </Pressable>
+              {isSignedIn == true?
+
+                <Pressable onPress={() => SignOutUser()}style={({ pressed }) => ({backgroundColor: pressed ? 'blue' : 'green',borderRadius: 8,},styles.pressableStyle)}><Text style={styles.text}>Sign Out</Text></Pressable>
+                :
+                <Pressable onPress={() => SignInUser()} style={({ pressed }) => ({backgroundColor: pressed ? 'blue' : 'green',borderRadius: 8,},styles.pressableStyle)}><Text style={styles.text}>Login</Text></Pressable>
+              }
+
             </KeyboardAvoidingView>
           </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
