@@ -13,7 +13,7 @@ function Weather() {
             reject('Request failed.Please try again');
             }, 40000);
 
-            let url ='https://api.openweathermap.org/data/2.5/weather?q=' +placeName +'&APPID=d657b497a7641d582fbd524b8265b228';
+            let url ='https://api.openweathermap.org/data/2.5/weather?lat=53.34770&lon=-1.63326&APPID=d657b497a7641d582fbd524b8265b228';
             fetch(url).then((response) => {
                 return Promise.all([response.status, response.json()]);
                 }).then((responseJson) => {
@@ -73,6 +73,7 @@ function Weather() {
         onPress={() => {
         weatherRequest().then((res) => {
         setWeatherData(res.data);
+
         });
         }}>
         <Text style={{color: 'white', fontSize: 20}}> WEATHER</Text></TouchableOpacity>
