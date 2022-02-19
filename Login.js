@@ -8,7 +8,7 @@ const db = SQLite.openDatabase(
         createFromLocation:'1',
     },
     () => {alert("Success")},
-    error => { console.log(error) }
+    error => { }
 );
 
 
@@ -67,7 +67,7 @@ export default function Login({ navigation }, props) {
 
             })
         }catch (error) {
-            console.log(error);
+            //console.log(error);
         }
     }
   }
@@ -81,7 +81,7 @@ export default function Login({ navigation }, props) {
                 [],
                 (tx, results)=> {
                     var len = results.rows.length;
-                    console.log(len)
+                    //console.log(len)
                     if (len > 0){
                         var userName = results.rows.item(0).USERNAME;
                         var Password = results.rows.item(0).PASSWORD;
@@ -97,7 +97,7 @@ export default function Login({ navigation }, props) {
             )
         })
     }catch (error){
-        console.log(error);
+        //console.log(error);
     }
   }
 
