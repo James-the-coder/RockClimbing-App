@@ -6,3 +6,6 @@ welcome page is the temporary home page for now "Welcome.js"
 "CreateAccount.js" is used for creating a new account
 "ViewAll.js" is for me to see what accounts are in the database
 "Filters.js" will be the filters for the crag finder
+Background pattern
+
+Description automatically generated with medium confidence
